@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import jakarta.servlet.http.HttpServletResponse;
-import vn.hoidanit.jobhunter.domain.RestReponse;
+import vn.hoidanit.jobhunter.domain.RestResponse;
 
 @ControllerAdvice
-public class FormatRestReponse implements ResponseBodyAdvice {
+public class FormatRestResponse implements ResponseBodyAdvice {
 
     @Override
     public boolean supports(MethodParameter returnType, Class converterType) {
@@ -28,7 +28,7 @@ public class FormatRestReponse implements ResponseBodyAdvice {
                 .getServletResponse();
         int status = httpServletResponse.getStatus();
 
-        RestReponse<Object> restResponse = new RestReponse<Object>();
+        RestResponse<Object> restResponse = new RestResponse<Object>();
         restResponse.setStatusCode(status);
 
         if (body instanceof String) {
