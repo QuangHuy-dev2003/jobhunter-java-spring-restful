@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
@@ -22,6 +23,7 @@ import vn.hoidanit.jobhunter.domain.DTO.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 
 @RestController
+@RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
@@ -32,6 +34,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
+    @ApiMessage("Create new user")
     public ResponseEntity<User> createNewUser(
             @RequestBody User postManUser) {
         String hashPassword = this.passwordEncoder.encode(postManUser.getPassword());
@@ -42,6 +45,7 @@ public class UserController {
     }
 
     @DeleteMapping("/users/{id}")
+    @ApiMessage("Delete user")
     public ResponseEntity<String> deleteUser(@PathVariable("id") Long id) throws IdInvalidException {
         if (id >= 1500) {
             throw new IdInvalidException("Id is invalid");
@@ -51,6 +55,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
+    @ApiMessage("Get user by id")
     public ResponseEntity<User> getUserByID(@PathVariable("id") Long id) {
         User user = this.userService.fetchUserByID(id);
         return ResponseEntity.status(HttpStatus.OK).body(user);
@@ -66,6 +71,7 @@ public class UserController {
     }
 
     @PutMapping("/users")
+    @ApiMessage("Update user")
     public ResponseEntity<User> updateUser(@RequestBody User user) {
         User userUpdate = this.userService.handleUpdateUser(user);
         return ResponseEntity.status(HttpStatus.OK).body(userUpdate);
