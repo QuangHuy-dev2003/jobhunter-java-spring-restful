@@ -1,11 +1,14 @@
 package vn.hoidanit.jobhunter.service;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.DTO.Meta;
+import vn.hoidanit.jobhunter.domain.DTO.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 
 @Service
@@ -33,8 +36,21 @@ public class UserService {
         }
     }
 
-    public List<User> fetchAllUsers() {
-        return this.userRepository.findAll();
+    public ResultPaginationDTO fetchAllUsers(Pageable pageable) {
+        Page<User> comPage = this.userRepository.findAll(pageable);
+        ResultPaginationDTO rs = new ResultPaginationDTO();
+        Meta mt = new Meta();
+        mt.setPage(comPage.getNumber());
+        mt.setPageSize(comPage.getSize());
+
+        mt.setPages(comPage.getTotalPages());
+        mt.setTotal(comPage.getTotalElements());
+
+        rs.setMeta(mt);
+        rs.setResult(comPage.getContent());
+
+        return rs;
+
     }
 
     public User handleUpdateUser(User user) {
@@ -46,7 +62,7 @@ public class UserService {
             return this.userRepository.save(currentUser);
         } else {
             return null;
-            
+
         }
     }
 
