@@ -41,8 +41,8 @@ public class UserService {
         Page<User> comPage = this.userRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta mt = new Meta();
-        mt.setPage(comPage.getNumber() + 1);
-        mt.setPageSize(comPage.getSize());
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageable.getPageSize());
 
         mt.setPages(comPage.getTotalPages());
         mt.setTotal(comPage.getTotalElements());

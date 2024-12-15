@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import jakarta.servlet.http.HttpServletResponse;
+import vn.hoidanit.jobhunter.Util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.domain.RestResponse;
 
 @ControllerAdvice
@@ -42,7 +43,8 @@ public class FormatRestResponse implements ResponseBodyAdvice {
         } else {
             // case success
             restResponse.setData(body);
-            restResponse.setMessage("CALL API SUCCESS");
+            ApiMessage message = returnType.getMethodAnnotation(ApiMessage.class);
+            restResponse.setMessage(message != null ? message.value() : "CALL API SUCCESS");
         }
         return restResponse;
     }
