@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.User;
@@ -36,11 +37,11 @@ public class UserService {
         }
     }
 
-    public ResultPaginationDTO fetchAllUsers(Pageable pageable) {
-        Page<User> comPage = this.userRepository.findAll(pageable);
+    public ResultPaginationDTO fetchAllUsers(Specification<User> spec, Pageable pageable) {
+        Page<User> comPage = this.userRepository.findAll(spec, pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();
         Meta mt = new Meta();
-        mt.setPage(comPage.getNumber());
+        mt.setPage(comPage.getNumber() + 1);
         mt.setPageSize(comPage.getSize());
 
         mt.setPages(comPage.getTotalPages());
