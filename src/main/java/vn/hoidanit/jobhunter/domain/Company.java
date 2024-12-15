@@ -10,6 +10,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -32,6 +33,7 @@ public class Company {
     private String logo;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Instant createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+7")
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
@@ -43,5 +45,13 @@ public class Company {
                 : "";
         this.createdAt = Instant.now();
 
+    }
+
+    @PreUpdate
+    public void handleBeforeUpdate() {
+        this.updatedBy = vn.hoidanit.jobhunter.Util.SecurityUtil.getCurrentUserLogin().isPresent() == true
+                ? vn.hoidanit.jobhunter.Util.SecurityUtil.getCurrentUserLogin().get()
+                : "";
+        this.updatedAt = Instant.now();
     }
 }
