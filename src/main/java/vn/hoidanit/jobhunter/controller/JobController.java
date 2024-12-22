@@ -19,9 +19,9 @@ import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.Util.Error.IdInvalidException;
 import vn.hoidanit.jobhunter.Util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.domain.Job;
-import vn.hoidanit.jobhunter.domain.reponse.ResCreateJobDTO;
-import vn.hoidanit.jobhunter.domain.reponse.ResUpdateJobDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.domain.reponse.job.ResCreateJobDTO;
+import vn.hoidanit.jobhunter.domain.reponse.job.ResUpdateJobDTO;
 import vn.hoidanit.jobhunter.service.JobService;
 
 @RestController
