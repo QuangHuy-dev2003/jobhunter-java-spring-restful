@@ -18,7 +18,7 @@ import com.turkraft.springfilter.boot.Filter;
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.Util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.domain.Company;
-import vn.hoidanit.jobhunter.domain.DTO.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.domain.reponse.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.CompanyService;
 
 @RestController

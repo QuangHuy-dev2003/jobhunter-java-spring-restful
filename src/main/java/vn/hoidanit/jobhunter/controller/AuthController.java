@@ -20,8 +20,8 @@ import vn.hoidanit.jobhunter.Util.SecurityUtil;
 import vn.hoidanit.jobhunter.Util.Error.IdInvalidException;
 import vn.hoidanit.jobhunter.Util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.domain.User;
-import vn.hoidanit.jobhunter.domain.DTO.LoginDTO;
-import vn.hoidanit.jobhunter.domain.DTO.ResLoginDTO;
+import vn.hoidanit.jobhunter.domain.reponse.ResLoginDTO;
+import vn.hoidanit.jobhunter.domain.request.ReqLoginDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 
 @RestController
@@ -43,7 +43,7 @@ public class AuthController {
         }
 
         @PostMapping("/auth/login")
-        public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
+        public ResponseEntity<ResLoginDTO> login(@Valid @RequestBody ReqLoginDTO loginDTO) {
 
                 // Nạp input gồm username/password vào Security
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
