@@ -62,11 +62,13 @@ public class AuthController {
                         ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
                                         currentUserDb.getId(),
                                         currentUserDb.getName(),
-                                        currentUserDb.getEmail());
+                                        currentUserDb.getEmail(),
+                                        currentUserDb.getRole());
                         resLoginDTO.setUser(userLogin);
                 }
+                // create access token
                 String access_token = this.securityUtil.createAccessToken(authentication.getName(),
-                                resLoginDTO.getUser());
+                                resLoginDTO);
                 resLoginDTO.setAccessToken(access_token);
 
                 // create refresh token
@@ -101,6 +103,7 @@ public class AuthController {
                         userLogin.setId(currentUserDb.getId());
                         userLogin.setUsername(currentUserDb.getName());
                         userLogin.setEmail(currentUserDb.getEmail());
+                        userLogin.setRole(currentUserDb.getRole());
                         userGetAccount.setUser(userLogin);
 
                 }
@@ -128,10 +131,11 @@ public class AuthController {
                         ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
                                         currentUserDb.getId(),
                                         currentUserDb.getName(),
-                                        currentUserDb.getEmail());
+                                        currentUserDb.getEmail(),
+                                        currentUserDb.getRole());
                         resLoginDTO.setUser(userLogin);
                 }
-                String access_token = this.securityUtil.createAccessToken(email, resLoginDTO.getUser());
+                String access_token = this.securityUtil.createAccessToken(email, resLoginDTO);
                 resLoginDTO.setAccessToken(access_token);
 
                 // create refresh token

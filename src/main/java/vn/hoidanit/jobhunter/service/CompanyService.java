@@ -33,6 +33,8 @@ public class CompanyService {
         return this.companyRepository.findById(id);
     }
 
+    
+
     public ResultPaginationDTO fetchAllCompanies(Specification<Company> spec, Pageable pageable) {
         Page<Company> comPage = this.companyRepository.findAll(pageable);
         ResultPaginationDTO rs = new ResultPaginationDTO();

@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -60,4 +62,10 @@ public class CompanyController {
         return ResponseEntity.status(HttpStatus.OK).body(company);
     }
 
+    @GetMapping("/companies/{id}")
+    @ApiMessage("Fetch company by id")
+    public ResponseEntity<Company> fetchCompanyById(@PathVariable("id") Long id) {
+        Optional<Company> company = this.companyService.findById(id);
+        return ResponseEntity.ok().body(company.get());
+    }
 }
