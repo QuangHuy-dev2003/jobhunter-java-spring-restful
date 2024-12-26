@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Job;
@@ -79,6 +80,11 @@ public class SubscriberService {
         return res;
     }
 
+    // @Scheduled(cron = "*/10 * * * * *" )
+    // public void testCron() {
+    //     System.out.println(">>> TEST CRON");
+    // }
+
     public void sendSubscribersEmailJobs() {
         List<Subscriber> listSubs = this.subscriberRepository.findAll();
         if (listSubs != null && listSubs.size() > 0) {
@@ -101,6 +107,10 @@ public class SubscriberService {
                 }
             }
         }
+    }
+
+    public Subscriber findByEmail(String email) {
+        return this.subscriberRepository.findByEmail(email);
     }
 
 }

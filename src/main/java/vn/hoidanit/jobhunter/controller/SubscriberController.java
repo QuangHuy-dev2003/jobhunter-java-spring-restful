@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import vn.hoidanit.jobhunter.Util.SecurityUtil;
 import vn.hoidanit.jobhunter.Util.Error.IdInvalidException;
 import vn.hoidanit.jobhunter.Util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.domain.Subscriber;
@@ -43,5 +44,13 @@ public class SubscriberController {
             throw new IdInvalidException("Id " + subsRequest.getId() + " không tồn tại");
         }
         return ResponseEntity.ok().body(this.subscriberService.update(subsDB, subsRequest));
+    }
+
+    @PostMapping("/subscribers/skills")
+    @ApiMessage("Get subcriber's skill")
+    public ResponseEntity<Subscriber> getSubcribersSkill() throws IdInvalidException{
+        String email = SecurityUtil.getCurrentUserLogin().isPresent() == true 
+        ? SecurityUtil.getCurrentUserLogin().get() : null;
+        return ResponseEntity.ok().body(this.subscriberService.findByEmail(email));
     }
 }
