@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.Setter;
 import vn.hoidanit.jobhunter.Util.SecurityUtil;
 import vn.hoidanit.jobhunter.Util.constant.GenderEnum;
+import vn.hoidanit.jobhunter.Util.constant.ProviderEnum;
 
 @Entity
 @Getter
@@ -53,6 +54,8 @@ public class User {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
+    @Enumerated(EnumType.STRING)
+    private ProviderEnum provider;
 
     @ManyToOne
     @JoinColumn(name = "company_id")

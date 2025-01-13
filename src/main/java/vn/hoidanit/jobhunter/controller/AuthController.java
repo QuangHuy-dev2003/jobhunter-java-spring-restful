@@ -1,6 +1,11 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +20,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.Util.SecurityUtil;
 import vn.hoidanit.jobhunter.Util.Error.IdInvalidException;
@@ -94,6 +101,72 @@ public class AuthController {
                                 .header(org.springframework.http.HttpHeaders.SET_COOKIE,
                                                 resCookies.toString())
                                 .body(resLoginDTO);
+        }
+
+        @GetMapping("/auth/google-success")
+        public ResponseEntity<?> googleLoginSuccess(HttpServletResponse response,
+                        @RequestParam String email) throws IOException {
+                try {
+
+                        // Lấy thông tin user từ database
+                        User currentUserDB = this.userService.handleGetUserByUserName(email);
+                        if (currentUserDB == null) {
+                                Map<String, Object> errorResponse = new HashMap<>();
+                                errorResponse.put("statusCode", 404);
+                                errorResponse.put("message", "User not found");
+                                errorResponse.put("error", "Not Found");
+                                errorResponse.put("data", null);
+
+                                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                                .body(errorResponse);
+                        }
+
+                        // Tạo response object
+                        ResLoginDTO res = new ResLoginDTO();
+                        ResLoginDTO.UserLogin userLogin = new ResLoginDTO.UserLogin(
+                                        currentUserDB.getId(),
+                                        currentUserDB.getEmail(),
+                                        currentUserDB.getName(),
+                                        currentUserDB.getRole());
+                        res.setUser(userLogin);
+
+                        // Tạo token
+                        String access_token = this.securityUtil.createAccessToken(email, res);
+                        res.setAccessToken(access_token);
+                        String refresh_token = this.securityUtil.createRefreshToken(email, res);
+
+                        // Cập nhật database
+                        this.userService.updateUserToken(refresh_token, email);
+
+                        // Tạo cookie
+                        ResponseCookie resCookies = ResponseCookie
+                                        .from("refresh_token", refresh_token)
+                                        .httpOnly(true)
+                                        .secure(true)
+                                        .path("/")
+                                        .maxAge(refreshTokenExpiration)
+                                        .build();
+
+                        // Redirect về frontend
+                        response.sendRedirect(
+                                        String.format("http://localhost:3000/auth/google-callback?access_token=%s",
+                                                        access_token));
+
+                        return ResponseEntity.ok()
+                                        .header(HttpHeaders.SET_COOKIE, resCookies.toString())
+                                        .body(res);
+
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        Map<String, Object> errorResponse = new HashMap<>();
+                        errorResponse.put("statusCode", 500);
+                        errorResponse.put("message", "Login failed: " + e.getMessage());
+                        errorResponse.put("error", "Internal Server Error");
+                        errorResponse.put("data", null);
+
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                        .body(errorResponse);
+                }
         }
 
         @GetMapping("/auth/account")

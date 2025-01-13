@@ -11,8 +11,8 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -33,10 +33,19 @@ public class SecurityConfiguration {
     @Value("${hoidanit.jwt.base64-secret}")
     private String jwtKey;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final PasswordEncoder passwordEncoder;
+
+    public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService,
+            PasswordEncoder passwordEncoder) {
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.passwordEncoder = passwordEncoder;
     }
+
+    // @Bean
+    // public PasswordEncoder passwordEncoder() {
+    // return new BCryptPasswordEncoder();
+    // }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
@@ -52,6 +61,9 @@ public class SecurityConfiguration {
                 "/api/v1/auth/register",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
+                "/api/v1/auth/google-success",
+                "/api/v1/auth/google-callback",
+                "/oauth2/authorization/google",
                 "/swagger-ui.html"
         };
         http
@@ -66,6 +78,16 @@ public class SecurityConfiguration {
                                 .anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/api/v1/auth/login")
+                        .successHandler((request, response, authentication) -> {
+                            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+                            String email = oauth2User.getAttribute("email");
+                            response.sendRedirect("/api/v1/auth/google-success?email=" + email);
+                        })
+                        .failureUrl("/api/v1/auth/login?error=true")
+                        .userInfoEndpoint(user -> user
+                                .userService(customOAuth2UserService)))
                 // .exceptionHandling(
                 // exceptions -> exceptions
                 // .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) // 401
