@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.Map;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import jakarta.validation.Valid;
 import vn.hoidanit.jobhunter.Util.Error.IdInvalidException;
 import vn.hoidanit.jobhunter.Util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.domain.User;
+import vn.hoidanit.jobhunter.domain.reponse.ReqChangePasswordDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResCreateUserDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResUpdateUserDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResUserDTO;
@@ -60,7 +63,7 @@ public class UserController {
         User user = this.userService.fetchUserByID(id);
         if (user == null) {
             throw new IdInvalidException("User với id = " + id + " không tồn tại");
-            
+
         }
         this.userService.handleDeleteUser(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
@@ -72,7 +75,7 @@ public class UserController {
         User user = this.userService.fetchUserByID(id);
         if (user == null) {
             throw new IdInvalidException("User với id = " + id + " không tồn tại");
-            
+
         }
         return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToResUserDTO(user));
     }
@@ -92,9 +95,27 @@ public class UserController {
         User userUpdate = this.userService.handleUpdateUser(user);
         if (userUpdate == null) {
             throw new IdInvalidException("User với id = " + user.getId() + " không tồn tại");
-            
+
         }
         return ResponseEntity.status(HttpStatus.OK).body(this.userService.convertToResUpdateUserDTO(userUpdate));
     }
 
+    @PutMapping("/users/{id}/change-password")
+    @ApiMessage("Change user password")
+    public ResponseEntity<?> changePassword(
+            @PathVariable("id") long id,
+            @Valid @RequestBody ReqChangePasswordDTO reqChangePassword) throws IdInvalidException {
+
+        User user = this.userService.handleChangePassword(
+                id,
+                reqChangePassword.getCurrentPassword(),
+                reqChangePassword.getNewPassword());
+
+        if (user == null) {
+            throw new IdInvalidException("Mật khẩu hiện tại không chính xác");
+        }
+
+        return ResponseEntity.ok().body(Map.of(
+                "message", "Thay đổi mật khẩu thành công"));
+    }
 }

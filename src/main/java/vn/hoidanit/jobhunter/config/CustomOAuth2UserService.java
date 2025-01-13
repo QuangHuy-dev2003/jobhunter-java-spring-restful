@@ -31,43 +31,79 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        // call api
         OAuth2User oAuth2User = super.loadUser(userRequest);
-
         Map<String, Object> attributes = oAuth2User.getAttributes();
-        String email = (String) attributes.get("email");
-        String name = (String) attributes.get("name");
 
-        // Kiểm tra xem email đã tồn tại chưa
-        User user = userService.handleGetUserByUserName(email);
-        if (user == null) {
-            // Tạo user mới
+        String email;
+        String name;
+        String provider = userRequest.getClientRegistration().getRegistrationId();
+
+        if ("google".equals(provider)) {
+            email = (String) attributes.get("email");
+            name = (String) attributes.get("name");
+        } else if ("facebook".equals(provider)) {
+            // Facebook trả về email trong attributes
+            email = (String) attributes.get("email");
+
+            // Facebook trả về name trong key "name"
+            name = (String) attributes.get("name");
+
+            // Nếu không có email (Facebook có thể không trả về email)
+            if (email == null) {
+                // Có thể sử dụng ID của Facebook làm email
+                String facebookId = (String) attributes.get("id");
+                email = facebookId + "@facebook.com";
+            }
+        } else {
+            throw new OAuth2AuthenticationException("Login provider not supported: " + provider);
+        }
+
+        // Log để debug
+        System.out.println("Facebook Raw Data:");
+        System.out.println("Data Provider: " + provider);
+        System.out.println("Data Attributes: " + attributes);
+        System.out.println("Data Email: " + email);
+        System.out.println("Data Name: " + name);
+
+        // Kiểm tra và tạo user
+        User user = userService.handleGetUserByUsername(email);
+        if (user != null) {
+            // Nếu người dùng đã tồn tại, kiểm tra và cập nhật provider nếu khác nhau
+            if ("facebook".equals(provider) && !ProviderEnum.FACEBOOK.equals(user.getProvider())) {
+                // Nếu hiện tại người dùng có provider khác, cập nhật từ provider cũ sang
+                // Facebook
+                ProviderEnum currentProvider = user.getProvider();
+                user.setProvider(ProviderEnum.FACEBOOK);
+                userService.handleCreateUser(user);
+                System.out.println("Updated user provider from " + currentProvider + " to FACEBOOK");
+            } else if ("google".equals(provider) && !ProviderEnum.GOOGLE.equals(user.getProvider())) {
+                // Nếu hiện tại người dùng có provider khác, cập nhật từ provider cũ sang Google
+                ProviderEnum currentProvider = user.getProvider();
+                user.setProvider(ProviderEnum.GOOGLE);
+                userService.handleCreateUser(user);
+                System.out.println("Updated user provider from " + currentProvider + " to GOOGLE");
+            }
+        } else {
+            // Nếu người dùng chưa tồn tại, tạo mới
             user = new User();
             user.setEmail(email);
             user.setName(name);
-            // Mã hóa mật khẩu mặc định "123456"
-            String encodedPassword = passwordEncoder.encode("123456"); // Mã hóa mật khẩu
-            user.setPassword(encodedPassword); // Gán mật khẩu đã mã hóa
-
-            // Set một số thông tin mặc định
-            user.setAge(0);
+            user.setPassword(passwordEncoder.encode("123456"));
+            user.setAge(18);
             user.setGender(GenderEnum.MALE);
             user.setAddress("");
-            if (userRequest.getClientRegistration().getRegistrationId().equals("google")) {
-                user.setProvider(ProviderEnum.GOOGLE);
-            } else if (userRequest.getClientRegistration().getRegistrationId().equals("facebook")) {
-                user.setProvider(ProviderEnum.FACEBOOK);
-            }
+            user.setProvider("google".equals(provider) ? ProviderEnum.GOOGLE : ProviderEnum.FACEBOOK);
+            System.out.println("Provider: " + user.getProvider());
+            System.out.println("Provider ordinal value: " + user.getProvider().ordinal());
 
-            // Role là null
             user.setRole(null);
-
             userService.handleCreateUser(user);
         }
 
         return new DefaultOAuth2User(
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")),
-                oAuth2User.getAttributes(),
-                "email");
+                attributes,
+                "google".equals(provider) ? "email" : "id" // Facebook sử dụng "id" làm nameAttributeKey
+        );
     }
 }

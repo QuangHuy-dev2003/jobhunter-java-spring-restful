@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import vn.hoidanit.jobhunter.domain.Company;
@@ -23,13 +24,20 @@ public class UserService {
     private final UserRepository userRepository;
     private final CompanyService companyService;
     private final RoleService roleService;
+    private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository userRepository,
             CompanyService companyService,
-            RoleService roleService) {
+            RoleService roleService,
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleService = roleService;
         this.companyService = companyService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public User handleGetUserByUsername(String username) {
+        return this.userRepository.findByEmail(username);
     }
 
     public User handleCreateUser(User user) {
@@ -201,5 +209,31 @@ public class UserService {
             currentUser.setRefreshToken(null);
             this.userRepository.save(currentUser);
         }
+    }
+
+    public User fetchUserById(long id) {
+        Optional<User> userOptional = this.userRepository.findById(id);
+        if (userOptional.isPresent()) {
+            return userOptional.get();
+        }
+        return null;
+    }
+
+    public User handleChangePassword(long userId, String currentPassword, String newPassword) {
+        User currentUser = this.fetchUserById(userId);
+        if (currentUser != null) {
+            // Kiểm tra mật khẩu hiện tại
+            if (!passwordEncoder.matches(currentPassword, currentUser.getPassword())) {
+                return null; // Mật khẩu hiện tại không đúng
+            }
+
+            // Mã hóa và cập nhật mật khẩu mới
+            String hashPassword = passwordEncoder.encode(newPassword);
+            currentUser.setPassword(hashPassword);
+
+            // Lưu vào database
+            return this.userRepository.save(currentUser);
+        }
+        return null;
     }
 }

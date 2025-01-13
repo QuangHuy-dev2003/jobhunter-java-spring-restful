@@ -12,6 +12,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -81,13 +82,34 @@ public class SecurityConfiguration {
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/api/v1/auth/login")
                         .successHandler((request, response, authentication) -> {
-                            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-                            String email = oauth2User.getAttribute("email");
-                            response.sendRedirect("/api/v1/auth/google-success?email=" + email);
+                            OAuth2AuthenticationToken oauth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
+                            String registrationId = oauth2AuthenticationToken.getAuthorizedClientRegistrationId();
+                            OAuth2User oauth2User = oauth2AuthenticationToken.getPrincipal();
+
+                            String email = null;
+                            if ("google".equals(registrationId)) {
+                                email = oauth2User.getAttribute("email");
+                            } else if ("facebook".equals(registrationId)) {
+                                email = oauth2User.getAttribute("email");
+                                if (email == null) {
+                                    // Sử dụng Facebook ID nếu không có email
+                                    String facebookId = oauth2User.getAttribute("id");
+                                    email = facebookId + "@facebook.com";
+                                }
+                            }
+
+                            if (email != null) {
+                                if ("google".equals(registrationId)) {
+                                    response.sendRedirect("/api/v1/auth/google-success?email=" + email);
+                                } else {
+                                    response.sendRedirect("/api/v1/auth/facebook-success?email=" + email);
+                                }
+                            } else {
+                                response.sendRedirect("/api/v1/auth/login?error=email-not-found");
+                            }
                         })
                         .failureUrl("/api/v1/auth/login?error=true")
-                        .userInfoEndpoint(user -> user
-                                .userService(customOAuth2UserService)))
+                        .userInfoEndpoint(user -> user.userService(customOAuth2UserService)))
                 // .exceptionHandling(
                 // exceptions -> exceptions
                 // .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) // 401
