@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
@@ -79,5 +80,12 @@ public class JobController {
             @com.turkraft.springfilter.boot.Filter Specification<Job> spec,
             Pageable pageable) {
         return ResponseEntity.ok().body(this.jobService.fetchAll(spec, pageable));
+    }
+
+    @GetMapping("/jobs/skill/{skillId}")
+    @ApiMessage("Get jobs by skill ID")
+    public ResponseEntity<List<Job>> getJobsBySkillId(@PathVariable("skillId") long skillId) {
+        List<Job> jobs = this.jobService.fetchJobsBySkillId(skillId);
+        return ResponseEntity.ok().body(jobs);
     }
 }

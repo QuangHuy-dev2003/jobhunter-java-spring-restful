@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -149,5 +150,14 @@ public class JobService {
         rs.setMeta(mt);
         rs.setResult(pageUser.getContent());
         return rs;
+    }
+
+    public List<Job> fetchJobsBySkillId(long skillId) {
+        Optional<Skill> skillOptional = this.skillRepository.findById(skillId);
+        if (skillOptional.isPresent()) {
+            Skill skill = skillOptional.get();
+            return skill.getJobs();
+        }
+        return Collections.emptyList();
     }
 }
