@@ -147,4 +147,41 @@ public class ResumeService {
         return rs;
     }
 
+    public ResultPaginationDTO fetchResumesByHrUser(long userId, Pageable pageable) {
+        // Get company ID for the HR user
+        List<Long> companyIds = userRepository.findCompanyIdsByUserIdAndRoleName(userId, "HR");
+        if (companyIds.isEmpty()) {
+            // Return empty result if user is not HR or has no company
+            ResultPaginationDTO emptyResult = new ResultPaginationDTO();
+            emptyResult.setMeta(new ResultPaginationDTO.Meta());
+            emptyResult.setResult(List.of());
+            return emptyResult;
+        }
+
+        // Get all resumes for the company
+        List<Resume> companyResumes = this.resumeRepository.findAllByCompanyId(companyIds.get(0));
+
+        // Convert to DTO
+        List<ResFetchResumeDTO> resumeDTOs = companyResumes.stream()
+                .map(this::getResume)
+                .collect(Collectors.toList());
+
+        // Create pagination result
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        ResultPaginationDTO.Meta meta = new ResultPaginationDTO.Meta();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), resumeDTOs.size());
+        List<ResFetchResumeDTO> pageContent = resumeDTOs.subList(start, end);
+
+        meta.setPage(pageable.getPageNumber() + 1);
+        meta.setPageSize(pageable.getPageSize());
+        meta.setTotal(resumeDTOs.size());
+        meta.setPages((int) Math.ceil((double) resumeDTOs.size() / pageable.getPageSize()));
+
+        result.setMeta(meta);
+        result.setResult(pageContent);
+
+        return result;
+    }
 }

@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.data.domain.Pageable;
@@ -27,6 +28,7 @@ import vn.hoidanit.jobhunter.domain.reponse.ResCreateUserDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResUpdateUserDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.reponse.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.domain.request.ResetPasswordDTO;
 import vn.hoidanit.jobhunter.service.UserService;
 
 @RestController
@@ -119,5 +121,18 @@ public class UserController {
                 "message", "Thay đổi mật khẩu thành công"));
     }
 
-    
+    @PostMapping("/users/reset-password")
+    @ApiMessage("Reset password with email")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordDTO request) {
+        try {
+            this.userService.resetPassword(request.getEmail(), request.getNewPassword());
+            return ResponseEntity.ok().body(new HashMap<String, String>() {{
+                put("message", "Đổi mật khẩu thành công");
+            }});
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new HashMap<String, String>() {{
+                put("message", e.getMessage());
+            }});
+        }
+    }
 }

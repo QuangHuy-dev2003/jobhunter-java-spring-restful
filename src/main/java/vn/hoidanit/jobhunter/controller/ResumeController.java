@@ -132,4 +132,24 @@ public class ResumeController {
     public ResponseEntity<ResultPaginationDTO> fetchResumeByUser(Pageable pageable) {
         return ResponseEntity.ok().body(this.resumeService.fetchResumeByUser(pageable));
     }
+
+    @GetMapping("/resumes/by-hr/{userId}")
+    @ApiMessage("Get all resumes for HR user's company")
+    public ResponseEntity<ResultPaginationDTO> fetchResumesByHrUser(
+            @PathVariable("userId") long userId,
+            Pageable pageable) throws IdInvalidException {
+
+        // Check if user exists
+        User user = this.userService.fetchUserById(userId);
+        if (user == null) {
+            throw new IdInvalidException("User với id = " + userId + " không tồn tại");
+        }
+
+        // Check if user is HR
+        if (user.getRole() == null || !user.getRole().getName().equals("HR")) {
+            throw new IdInvalidException("User không có quyền HR");
+        }
+
+        return ResponseEntity.ok().body(this.resumeService.fetchResumesByHrUser(userId, pageable));
+    }
 }
