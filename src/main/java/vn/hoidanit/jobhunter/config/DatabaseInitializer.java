@@ -79,6 +79,11 @@ public class DatabaseInitializer implements CommandLineRunner {
             arr.add(new Permission("Get subscribers with pagination", "/api/v1/subscribers", "GET", "SUBSCRIBERS"));
             arr.add(new Permission("Download a file", "/api/v1/files", "POST", "FILES"));
             arr.add(new Permission("Upload a file", "/api/v1/files", "GET", "FILES"));
+
+            arr.add(new Permission("Create a new post limit", "/api/v1/post-limits", "POST", "POSTLIMITS"));
+            arr.add(new Permission("Update a post limit", "/api/v1/post-limits/{id}", "PUT", "POSTLIMITS"));
+            arr.add(new Permission("Delete a post limit", "/api/v1/post-limits/{id}", "DELETE", "POSTLIMITS"));
+            arr.add(new Permission("Get all post limit", "/api/v1/post-limits", "GET", "POSTLIMITS"));
             this.permissionRepository.saveAll(arr);
         }
         if (countRoles == 0) {

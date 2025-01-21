@@ -33,14 +33,18 @@ import vn.hoidanit.jobhunter.Util.constant.ProviderEnum;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     private String name;
-    @NotBlank(message = "Email không được để trống")
+
+    @NotBlank(message = "email không được để trống")
     private String email;
-    @NotBlank(message = "Password không được để trống")
+
+    @NotBlank(message = "password không được để trống")
     private String password;
+
     private int age;
+
     @Enumerated(EnumType.STRING)
     private GenderEnum gender;
 
@@ -50,12 +54,23 @@ public class User {
     private String refreshToken;
 
     private Instant createdAt;
-
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
     @Enumerated(EnumType.STRING)
     private ProviderEnum provider;
+
+    private int postCount = 0; // Đếm số bài đăng hiện tại
+
+    // Phương thức để tăng số bài đăng
+    public void incrementPostCount() {
+        this.postCount++;
+    }
+
+    // Phương thức để reset số bài đăng (có thể dùng khi reset hàng tháng)
+    public void resetPostCount() {
+        this.postCount = 0;
+    }
 
     @ManyToOne
     @JoinColumn(name = "company_id")
@@ -69,12 +84,24 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Payment> payments;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Subscription> subscriptions;
+
     @PrePersist
     public void handleBeforeCreate() {
         this.createdBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
+
         this.createdAt = Instant.now();
+        if (this.provider == null) {
+            this.provider = ProviderEnum.LOCAL;
+        }
     }
 
     @PreUpdate
@@ -82,6 +109,7 @@ public class User {
         this.updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() == true
                 ? SecurityUtil.getCurrentUserLogin().get()
                 : "";
+
         this.updatedAt = Instant.now();
     }
 
