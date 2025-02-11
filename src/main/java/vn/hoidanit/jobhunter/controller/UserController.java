@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
+
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.data.domain.Pageable;
@@ -15,11 +17,13 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.turkraft.springfilter.boot.Filter;
 
 import jakarta.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.request.ResetPasswordDTO;
 import vn.hoidanit.jobhunter.domain.response.ReqChangePasswordDTO;
@@ -27,7 +31,10 @@ import vn.hoidanit.jobhunter.domain.response.ResCreateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUpdateUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResUserDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
+import vn.hoidanit.jobhunter.repository.UserRepository;
+import vn.hoidanit.jobhunter.service.CloudinaryService;
 import vn.hoidanit.jobhunter.service.UserService;
+import vn.hoidanit.jobhunter.util.SecurityUtil;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 
@@ -35,12 +42,19 @@ import vn.hoidanit.jobhunter.util.error.IdInvalidException;
 @RequestMapping("/api/v1")
 public class UserController {
     private final UserService userService;
-
+    private final CloudinaryService cloudinaryService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder,
+            CloudinaryService cloudinaryService,
+            UserRepository userRepository
+                            ) {
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.cloudinaryService = cloudinaryService;
+        this.userRepository = userRepository;
+
     }
 
     @PostMapping("/users")
@@ -96,13 +110,44 @@ public class UserController {
     }
 
     @PutMapping("/users/update")
-    @ApiMessage("Update a user")
-    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User user) throws IdInvalidException {
-        User ericUser = this.userService.handleUpdateUser(user);
-        if (ericUser == null) {
+    @ApiMessage("Update user info")
+    public ResponseEntity<ResUpdateUserDTO> updateUser(@RequestBody User user)
+        throws IdInvalidException {
+        User updatedUser = this.userService.handleUpdateUser(user);
+        if (updatedUser == null) {
             throw new IdInvalidException("User với id = " + user.getId() + " không tồn tại");
         }
-        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(ericUser));
+        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(updatedUser));
+    }
+
+    @PutMapping("/users/{userId}/profile-image")
+    @ApiMessage("Update user profile image")
+    public ResponseEntity<ResUpdateUserDTO> updateProfileImage(
+        @PathVariable Long userId,
+        @RequestParam("file") MultipartFile file
+    ) throws IdInvalidException, IOException {
+        User user = this.userService.fetchUserById(userId);
+        if (user == null) {
+            throw new IdInvalidException("User với id = " + userId + " không tồn tại");
+        }
+
+        if (file != null && !file.isEmpty()) {
+            // Xóa ảnh cũ nếu có
+            if (user.getUrlProfile() != null && !user.getUrlProfile().isEmpty()) {
+                String publicId = user.getUrlProfile().substring(
+                    user.getUrlProfile().lastIndexOf('/') + 1,
+                    user.getUrlProfile().lastIndexOf('.')
+                );
+                cloudinaryService.deleteFile(publicId);
+            }
+
+            // Tải lên ảnh mới
+            String imageUrl = cloudinaryService.uploadFile(file, "users/avatars", "avatar_");
+            user.setUrlAvatar(imageUrl);
+            user = this.userRepository.save(user);
+        }
+
+        return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(user));
     }
 
     @PutMapping("/users/{id}/change-password")
@@ -153,6 +198,25 @@ public class UserController {
     public ResponseEntity<Long> getTotalUserCount() {
         return ResponseEntity.status(HttpStatus.OK).body(this.userService.getTotalUserCount());
     }
+
+    @GetMapping("/users/me")
+    @ApiMessage("Lấy thông tin người dùng hiện tại")
+    public ResponseEntity<ResUserDTO> getCurrentUser() {
+        String email = SecurityUtil.getCurrentUserLogin().orElse("");
+        if (email.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        User user = userService.handleGetUserByUsername(email);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        ResUserDTO resUserDTO = userService.convertToResUserDTO(user);
+        return ResponseEntity.ok(resUserDTO);
+    }
+
+
 
 
 }

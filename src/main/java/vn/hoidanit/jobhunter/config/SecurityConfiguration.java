@@ -64,7 +64,7 @@ public class SecurityConfiguration {
                 "/api/v1/email/**",
                 "/v3/api-docs/**",
                 "/swagger-ui/**",
-
+                "/api/v1/test-firebase",
                 "/api/v1/auth/google-success",
                 "/api/v1/auth/google-callback",
                 "/oauth2/authorization/google",

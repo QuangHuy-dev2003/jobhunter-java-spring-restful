@@ -24,6 +24,7 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
             "/api/v1/users/{id}",
             "/api/v1/users/post_count/{id}",
             "/api/v1/users/update",
+            "/api/v1/users/{userId}/profile-image",
             "/api/v1/post-limits/**",
             "/api/v1/payments/**",
             "/api/v1/subscriptions/**",

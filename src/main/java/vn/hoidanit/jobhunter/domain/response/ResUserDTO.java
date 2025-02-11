@@ -19,6 +19,10 @@ public class ResUserDTO {
     private GenderEnum gender;
     private String address;
     private int age;
+    private String phoneNumber;
+    private String urlAvatar;
+    private String urlProfile;
+
     private Instant updatedAt;
     private Instant createdAt;
 

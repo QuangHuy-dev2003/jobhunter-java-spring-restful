@@ -100,6 +100,8 @@ public class UserService {
             currentUser.setGender(reqUser.getGender());
             currentUser.setAge(reqUser.getAge());
             currentUser.setName(reqUser.getName());
+            currentUser.setPhoneNumber(reqUser.getPhoneNumber());
+            currentUser.setUrlProfile(reqUser.getUrlProfile());
 
             // check company
             if (reqUser.getCompany() != null) {
@@ -185,6 +187,9 @@ public class UserService {
         res.setEmail(user.getEmail());
         res.setName(user.getName());
         res.setAge(user.getAge());
+        res.setPhoneNumber(user.getPhoneNumber());
+        res.setUrlAvatar(user.getUrlAvatar());
+        res.setUrlProfile(user.getUrlProfile());
         res.setUpdatedAt(user.getUpdatedAt());
         res.setCreatedAt(user.getCreatedAt());
         res.setGender(user.getGender());
