@@ -60,4 +60,24 @@ package vn.hoidanit.jobhunter.service;
           public void deleteFile(String publicId) throws IOException {
             cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
           }
+
+
+          public String extractPublicId(String url) {
+            int uploadIndex = url.indexOf("/upload/");
+            if (uploadIndex != -1) {
+              String afterUpload = url.substring(uploadIndex + 8); // +8 to skip "/upload/"
+              int slashIndex = afterUpload.indexOf('/');
+              if (slashIndex != -1) {
+                // Start from the first '/' after "/upload/"
+                String publicId = afterUpload.substring(slashIndex + 1);
+                // Remove file extension if present
+                int dotIndex = publicId.lastIndexOf('.');
+                if (dotIndex != -1) {
+                  publicId = publicId.substring(0, dotIndex);
+                }
+                return publicId;
+              }
+            }
+            throw new IllegalArgumentException("Invalid URL format");
+          }
         }

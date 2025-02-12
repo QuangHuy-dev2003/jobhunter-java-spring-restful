@@ -174,6 +174,7 @@ public class UserService {
         if (user.getCompany() != null) {
             com.setId(user.getCompany().getId());
             com.setName(user.getCompany().getName());
+            com.setLogo(user.getCompany().getLogo());
             res.setCompany(com);
         }
 

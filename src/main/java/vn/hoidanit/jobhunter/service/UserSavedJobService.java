@@ -1,9 +1,14 @@
 package vn.hoidanit.jobhunter.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import vn.hoidanit.jobhunter.domain.Job;
+import vn.hoidanit.jobhunter.domain.Skill;
 import vn.hoidanit.jobhunter.domain.User;
 import vn.hoidanit.jobhunter.domain.UserSavedJob;
+import vn.hoidanit.jobhunter.domain.response.job.UserSaveJobDTO;
 import vn.hoidanit.jobhunter.repository.JobRepository;
 import vn.hoidanit.jobhunter.repository.UserRepository;
 import vn.hoidanit.jobhunter.repository.UserSavedJobRepository;
@@ -69,5 +74,50 @@ public class UserSavedJobService {
       return true;
     }
     return false;
+  }
+
+  public List<UserSavedJob> getSavedJobs(long userId) {
+    return userSavedJobRepository.findAllByUserId(userId);
+  }
+
+  public UserSaveJobDTO convertToDTO(UserSavedJob userSavedJob) {
+    UserSaveJobDTO dto = new UserSaveJobDTO();
+
+    // Chuyển đổi Company
+    UserSaveJobDTO.CompanyUser company = new UserSaveJobDTO.CompanyUser();
+    company.setId(userSavedJob.getJob().getCompany().getId());
+    company.setName(userSavedJob.getJob().getCompany().getName());
+    company.setLogo(userSavedJob.getJob().getCompany().getLogo());
+    dto.setCompany(company);
+
+    // Chuyển đổi Job
+    UserSaveJobDTO.JobUser job = new UserSaveJobDTO.JobUser();
+    job.setId(userSavedJob.getJob().getId());
+    job.setName(userSavedJob.getJob().getName());
+    job.setLocation(userSavedJob.getJob().getLocation());
+    job.setSalary(userSavedJob.getJob().getSalary());
+    job.setLevel(userSavedJob.getJob().getLevel());
+    job.setStartDate(userSavedJob.getJob().getStartDate());
+    dto.setJob(job);
+
+    // Chuyển đổi Skill
+    if (userSavedJob.getJob().getSkills() != null && !userSavedJob.getJob().getSkills().isEmpty()) {
+      List<UserSaveJobDTO.SkillUser> skillUsers = userSavedJob.getJob().getSkills().stream()
+          .map(skill -> {
+            UserSaveJobDTO.SkillUser skillUser = new UserSaveJobDTO.SkillUser();
+            skillUser.setId(skill.getId());
+            skillUser.setName(skill.getName());
+            return skillUser;
+          })
+          .collect(Collectors.toList());
+      dto.setSkills(skillUsers);
+    } else {
+      dto.setSkills(new ArrayList<>());
+    }
+
+    // Đặt trạng thái
+    dto.setStatus(userSavedJob.getStatus());
+
+    return dto;
   }
 }

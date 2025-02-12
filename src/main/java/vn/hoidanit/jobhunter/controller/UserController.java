@@ -150,6 +150,33 @@ public class UserController {
         return ResponseEntity.ok(this.userService.convertToResUpdateUserDTO(user));
     }
 
+    @DeleteMapping("/users/{userId}/profile-image")
+    @ApiMessage("Delete user profile image")
+    public ResponseEntity<?> deleteProfileImage(@PathVariable Long userId) throws IdInvalidException, IOException {
+        User user = this.userService.fetchUserById(userId);
+        if (user == null) {
+            throw new IdInvalidException("User với id = " + userId + " không tồn tại");
+        }
+
+        if (user.getUrlAvatar() != null && !user.getUrlAvatar().isEmpty()) {
+            String publicId = this.cloudinaryService.extractPublicId(user.getUrlAvatar());
+            this.cloudinaryService.deleteFile(publicId);
+
+            // Cập nhật user để xóa URL ảnh
+            user.setUrlAvatar(null);
+            user = this.userRepository.save(user);
+
+            return ResponseEntity.ok().body(Map.of(
+                "message", "Xóa ảnh đại diện thành công",
+                "user", this.userService.convertToResUpdateUserDTO(user)
+            ));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of(
+                "message", "Người dùng không có ảnh đại diện để xóa"
+            ));
+        }
+    }
+
     @PutMapping("/users/{id}/change-password")
     @ApiMessage("Change user password")
     public ResponseEntity<?> changePassword(

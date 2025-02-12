@@ -1,5 +1,7 @@
 package vn.hoidanit.jobhunter.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,6 +10,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import vn.hoidanit.jobhunter.domain.UserSavedJob;
+import vn.hoidanit.jobhunter.domain.response.job.UserSaveJobDTO;
 import vn.hoidanit.jobhunter.service.UserSavedJobService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
 
@@ -54,5 +58,16 @@ public class UserSavedJobController {
     } else {
       return ResponseEntity.badRequest().body(toggled);
     }
+  }
+
+  //Tìm job_id mà user_id đã lưu
+  @GetMapping("/user-saved-jobs")
+  @ApiMessage("Get all saved jobs of a user")
+  public ResponseEntity<List<UserSaveJobDTO>> getSavedJobs(@RequestParam long userId) {
+    List<UserSavedJob> savedJobs = userSavedJobService.getSavedJobs(userId);
+    List<UserSaveJobDTO> dtoList = savedJobs.stream()
+        .map(this.userSavedJobService::convertToDTO)
+        .collect(Collectors.toList());
+    return ResponseEntity.ok().body(dtoList);
   }
 }
