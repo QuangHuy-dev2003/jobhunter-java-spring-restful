@@ -1,6 +1,5 @@
 package vn.hoidanit.jobhunter.service;
 
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,6 +14,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import vn.hoidanit.jobhunter.domain.Company;
 import vn.hoidanit.jobhunter.domain.Role;
 import vn.hoidanit.jobhunter.domain.User;
@@ -195,6 +195,8 @@ public class UserService {
         res.setCreatedAt(user.getCreatedAt());
         res.setGender(user.getGender());
         res.setAddress(user.getAddress());
+        // Kiểm tra null cho isHrActivated và mặc định là false nếu null
+        res.setHrActivated(user.getIsHrActivated() != null ? user.getIsHrActivated() : false);
         return res;
     }
 
@@ -209,12 +211,13 @@ public class UserService {
     public User getUserByRefreshTokenAndEmail(String token, String email) {
         return this.userRepository.findByRefreshTokenAndEmail(token, email);
     }
+
     public User handleChangePassword(long userId, String currentPassword, String newPassword) {
         User currentUser = this.fetchUserById(userId);
         if (currentUser != null) {
             // Kiểm tra mật khẩu hiện tại
             if (!passwordEncoder.matches(currentPassword, currentUser.getPassword())) {
-                return null;  // Mật khẩu hiện tại không đúng
+                return null; // Mật khẩu hiện tại không đúng
             }
 
             // Mã hóa và cập nhật mật khẩu mới
@@ -242,7 +245,7 @@ public class UserService {
     public String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()
-            || authentication instanceof AnonymousAuthenticationToken) {
+                || authentication instanceof AnonymousAuthenticationToken) {
             throw new RuntimeException("User not authenticated");
         }
         return authentication.getName(); // Spring Security uses email as username
@@ -254,14 +257,13 @@ public class UserService {
 
     @Scheduled(cron = "0 0 0 1 * ?") // Mỗi tháng lúc 00:00 ngày đầu tiên
     @Transactional
-    public void resetPostCountMonthly(){
+    public void resetPostCountMonthly() {
         List<User> users = userRepository.findAll();
         for (User user : users) {
             user.resetPostCount();
         }
         userRepository.saveAll(users);
     }
-
 
     public Long getTotalUserCount() {
         return userRepository.count();

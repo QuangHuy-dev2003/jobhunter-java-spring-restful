@@ -12,7 +12,7 @@ import vn.hoidanit.jobhunter.util.constant.SubscriptionStatusEnum;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
   List<Subscription> findByStatus(SubscriptionStatusEnum status);
-
+  List<Subscription> findByPostLimitId(long postLimitId);
 
 
   @Query("SELECT s FROM Subscription s WHERE s.user = :user " +

@@ -14,7 +14,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
   Optional<Payment> findByPaymentRef(String paymentRef);
   @Query("SELECT p FROM Payment p WHERE p.paymentStatus = :status")
   List<Payment> findByPaymentStatus(@Param("status") PaymentStatusEnum status);
-
+  List<Payment> findByPostLimitId(Long postLimitId);
   List<Payment> findByUser(User user);
 
   List<Payment> findByTotalPriceGreaterThan(double amount);

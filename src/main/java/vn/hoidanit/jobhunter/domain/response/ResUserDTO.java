@@ -29,6 +29,7 @@ public class ResUserDTO {
     private CompanyUser company;
 
     private RoleUser role;
+    private boolean isHrActivated;
 
     @Getter
     @Setter

@@ -1,5 +1,6 @@
 package vn.hoidanit.jobhunter.domain;
 
+import jakarta.persistence.OneToOne;
 import java.time.Instant;
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,7 +60,7 @@ public class User {
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-
+    private Boolean isHrActivated = false;
     @Enumerated(EnumType.STRING)
     private ProviderEnum provider;
 
@@ -87,6 +88,9 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
+
+    
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Payment> payments;
@@ -98,6 +102,10 @@ public class User {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<UserSavedJob> savedJobs;
+
+    @OneToOne(mappedBy = "user")
+    @JsonIgnore
+    private ContactRequest contactRequest;
 
     @PrePersist
     public void handleBeforeCreate() {

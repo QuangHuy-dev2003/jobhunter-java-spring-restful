@@ -1,6 +1,7 @@
 package vn.hoidanit.jobhunter.repository;
 
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -11,10 +12,10 @@ import vn.hoidanit.jobhunter.domain.Resume;
 
 @Repository
 public interface ResumeRepository extends JpaRepository<Resume, Long>,
-        JpaSpecificationExecutor<Resume> {
+    JpaSpecificationExecutor<Resume> {
 
   @Query("SELECT r FROM Resume r WHERE r.job.company.id = :companyId")
-  List<Resume> findAllByCompanyId(Long companyId);
+  List<Resume> findAllByCompanyId(@Param("companyId") Long companyId);
 
   @Query("SELECT r, j, c, s.name " +
       "FROM Resume r " +

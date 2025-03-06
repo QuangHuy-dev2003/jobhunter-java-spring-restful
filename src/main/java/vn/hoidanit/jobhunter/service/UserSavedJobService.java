@@ -98,6 +98,7 @@ public class UserSavedJobService {
     job.setSalary(userSavedJob.getJob().getSalary());
     job.setLevel(userSavedJob.getJob().getLevel());
     job.setStartDate(userSavedJob.getJob().getStartDate());
+    job.setEndDate(userSavedJob.getJob().getEndDate());
     dto.setJob(job);
 
     // Chuyển đổi Skill

@@ -11,7 +11,6 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -32,14 +31,11 @@ import vn.hoidanit.jobhunter.util.SecurityUtil;
 @EnableMethodSecurity(securedEnabled = true)
 public class SecurityConfiguration {
 
-
-
     @Value("${hoidanit.jwt.base64-secret}")
     private String jwtKey;
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final PasswordEncoder passwordEncoder;
-
 
     public SecurityConfiguration(CustomOAuth2UserService customOAuth2UserService,
             PasswordEncoder passwordEncoder) {
@@ -47,10 +43,10 @@ public class SecurityConfiguration {
         this.passwordEncoder = passwordEncoder;
     }
 
-//    @Bean
-//    public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
-//    }
+    // @Bean
+    // public PasswordEncoder passwordEncoder() {
+    // return new BCryptPasswordEncoder();
+    // }
 
     @Bean
     public SecurityFilterChain filterChain(
@@ -69,8 +65,8 @@ public class SecurityConfiguration {
                 "/api/v1/auth/google-callback",
                 "/oauth2/authorization/google",
                 "/oauth2/authorization/facebook",
-                 "/api/v1/auth/facebook-success",
-            "/api/v1/auth/facebook-callback",
+                "/api/v1/auth/facebook-success",
+                "/api/v1/auth/facebook-callback",
                 "/swagger-ui.html"
         };
 
@@ -84,46 +80,47 @@ public class SecurityConfiguration {
                                 .requestMatchers(HttpMethod.GET, "/api/v1/jobs/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/skills/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/email/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/email/email/contact").permitAll()
                                 .requestMatchers("/api/v1/payments/vnpay-return").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/users/reset-password").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/web-scraper/**").permitAll()
 
-                            .anyRequest().authenticated())
+                                .anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
-                    .authenticationEntryPoint(customAuthenticationEntryPoint))
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/api/v1/auth/login")
-                .successHandler((request, response, authentication) -> {
-                    OAuth2AuthenticationToken oauth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
-                    String registrationId = oauth2AuthenticationToken.getAuthorizedClientRegistrationId();
-                    OAuth2User oauth2User = oauth2AuthenticationToken.getPrincipal();
+                        .authenticationEntryPoint(customAuthenticationEntryPoint))
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/api/v1/auth/login")
+                        .successHandler((request, response, authentication) -> {
+                            OAuth2AuthenticationToken oauth2AuthenticationToken = (OAuth2AuthenticationToken) authentication;
+                            String registrationId = oauth2AuthenticationToken.getAuthorizedClientRegistrationId();
+                            OAuth2User oauth2User = oauth2AuthenticationToken.getPrincipal();
 
-                    String email = null;
-                    if ("google".equals(registrationId)) {
-                        email = oauth2User.getAttribute("email");
-                    } else if ("facebook".equals(registrationId)) {
-                        email = oauth2User.getAttribute("email");
-                        if (email == null) {
-                            // Sử dụng Facebook ID nếu không có email
-                            String facebookId = oauth2User.getAttribute("id");
-                            email = facebookId + "@facebook.com";
-                        }
-                    }
+                            String email = null;
+                            if ("google".equals(registrationId)) {
+                                email = oauth2User.getAttribute("email");
+                            } else if ("facebook".equals(registrationId)) {
+                                email = oauth2User.getAttribute("email");
+                                if (email == null) {
+                                    // Sử dụng Facebook ID nếu không có email
+                                    String facebookId = oauth2User.getAttribute("id");
+                                    email = facebookId + "@facebook.com";
+                                }
+                            }
 
-                    if (email != null) {
-                        if ("google".equals(registrationId)) {
-                            response.sendRedirect("/api/v1/auth/google-success?email=" + email);
-                        } else {
-                            response.sendRedirect("/api/v1/auth/facebook-success?email=" + email);
-                        }
-                    } else {
-                        response.sendRedirect("/api/v1/auth/login?error=email-not-found");
-                    }
-                })
-                .failureUrl("/api/v1/auth/login?error=true")
-                .userInfoEndpoint(user -> user.userService(customOAuth2UserService)))
+                            if (email != null) {
+                                if ("google".equals(registrationId)) {
+                                    response.sendRedirect("/api/v1/auth/google-success?email=" + email);
+                                } else {
+                                    response.sendRedirect("/api/v1/auth/facebook-success?email=" + email);
+                                }
+                            } else {
+                                response.sendRedirect("/api/v1/auth/login?error=email-not-found");
+                            }
+                        })
+                        .failureUrl("/api/v1/auth/login?error=true")
+                        .userInfoEndpoint(user -> user.userService(customOAuth2UserService)))
 
-            // .exceptionHandling(
+                // .exceptionHandling(
                 // exceptions -> exceptions
                 // .authenticationEntryPoint(customAuthenticationEntryPoint) // 401
                 // .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) // 403

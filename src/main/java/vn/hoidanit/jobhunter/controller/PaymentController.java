@@ -1,12 +1,10 @@
 package vn.hoidanit.jobhunter.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +17,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import vn.hoidanit.jobhunter.domain.Payment;
-import vn.hoidanit.jobhunter.domain.Subscription;
 import vn.hoidanit.jobhunter.domain.request.PaymentRequest;
 import vn.hoidanit.jobhunter.domain.response.payment.PlanSalesDTO;
 import vn.hoidanit.jobhunter.domain.response.payment.ResPaymentDTO;
@@ -42,7 +43,6 @@ public class PaymentController {
 
   @Value("${app.frontend-url}")
   private String frontendUrl;
-
 
   public PaymentController(PaymentService paymentService,
       UserService userService,
@@ -68,14 +68,12 @@ public class PaymentController {
       return ResponseEntity.ok(Map.of(
           "code", "00",
           "message", "success",
-          "data", paymentUrl
-      ));
+          "data", paymentUrl));
     } catch (Exception e) {
       e.printStackTrace(); // Log full stack trace
       return ResponseEntity.badRequest().body(Map.of(
           "code", "01",
-          "message", e.getMessage()
-      ));
+          "message", e.getMessage()));
     }
   }
 
@@ -126,7 +124,6 @@ public class PaymentController {
     }
   }
 
-
   @GetMapping("/payments/success")
   @ApiMessage("Get all payment success")
   public ResponseEntity<?> getPaymentSuccess() throws Exception {
@@ -135,22 +132,19 @@ public class PaymentController {
     return ResponseEntity.ok(Map.of(
         "code", "00",
         "message", "success",
-        "data", payments
-    ));
+        "data", payments));
   }
 
   @GetMapping("/payments")
   public ResponseEntity<?> getPayments(
-      @RequestParam(required = false) String paymentRef
-  ) {
+      @RequestParam(required = false) String paymentRef) {
     List<ResPaymentDTO> payments = paymentService.getAllPayments(paymentRef);
     System.out.println("Payments Search: " + payments);
 
     return ResponseEntity.ok(Map.of(
         "code", "00",
         "message", "success",
-        "data", payments
-    ));
+        "data", payments));
   }
 
   @PutMapping("/payments/update/{id}")
@@ -164,21 +158,18 @@ public class PaymentController {
       return ResponseEntity.ok(Map.of(
           "code", "00",
           "message", "success",
-          "data", payment
-      ));
+          "data", payment));
     } catch (RuntimeException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
           "code", "01",
-          "message", e.getMessage()
-      ));
+          "message", e.getMessage()));
     }
   }
 
   @GetMapping("/payments/plansales")
   @ApiMessage("Get count payments success for post limit")
   public ResponseEntity<?> getPaymentPlanSales(
-      @RequestParam(value = "year", required = false)
-      @Min(2025) @Max(2100) Integer year) {
+      @RequestParam(value = "year", required = false) @Min(2025) @Max(2100) Integer year) {
 
     int currentYear = year != null ? year : LocalDate.now().getYear();
     List<PlanSalesDTO> payments = paymentService.findMonthlyPlanSales(currentYear);
@@ -186,8 +177,7 @@ public class PaymentController {
     return ResponseEntity.ok(Map.of(
         "code", "00",
         "message", "success",
-        "data", payments
-    ));
+        "data", payments));
   }
 
   // delete by paymentref
@@ -198,13 +188,11 @@ public class PaymentController {
       paymentRepository.deleteByPaymentRef(paymentRef);
       return ResponseEntity.ok(Map.of(
           "code", "00",
-          "message", "success"
-      ));
+          "message", "success"));
     } catch (RuntimeException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
           "code", "01",
-          "message", e.getMessage()
-      ));
+          "message", e.getMessage()));
     }
   }
 
@@ -216,8 +204,7 @@ public class PaymentController {
     return ResponseEntity.ok(Map.of(
         "code", "00",
         "message", "success",
-        "data", totalPrice
-    ));
+        "data", totalPrice));
   }
 
 }

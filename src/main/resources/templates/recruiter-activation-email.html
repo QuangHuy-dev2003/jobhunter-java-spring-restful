@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Xác nhận tài khoản nhà tuyển dụng</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f9f9f9;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                text-align: center;
+                padding: 20px 0;
+                border-bottom: 2px solid #f0f0f0;
+            }
+            .header h1 {
+                color: #2c3e50;
+                margin: 0;
+                font-size: 24px;
+            }
+            .logo {
+                max-width: 150px;
+                margin-bottom: 15px;
+            }
+            .content {
+                padding: 20px 0;
+            }
+            .welcome-message {
+                font-size: 18px;
+                color: #3498db;
+                margin-bottom: 20px;
+            }
+            .info-box {
+                background-color: #f8f9fa;
+                border-left: 4px solid #3498db;
+                padding: 15px;
+                margin: 15px 0;
+                border-radius: 4px;
+            }
+            .info-item {
+                margin-bottom: 10px;
+            }
+            .label {
+                font-weight: bold;
+                color: #2c3e50;
+                margin-right: 5px;
+            }
+            .value {
+                color: #34495e;
+            }
+            .otp-section {
+                text-align: center;
+                margin: 25px 0;
+            }
+            .otp-code {
+                display: inline-block;
+                font-size: 24px;
+                font-weight: bold;
+                color: #fff;
+                background-color: #3498db;
+                padding: 12px 20px;
+                border-radius: 6px;
+                letter-spacing: 2px;
+            }
+            .button-section {
+                text-align: center;
+                margin: 25px 0;
+            }
+            .button {
+                display: inline-block;
+                background-color: #3498db;
+                color: #ffffff !important;
+                text-decoration: none;
+                padding: 12px 30px;
+                border-radius: 6px;
+                font-weight: bold;
+                text-transform: uppercase;
+                font-size: 14px;
+                transition: background-color 0.3s;
+                text-align: center;
+            }
+            .button:hover {
+                background-color: #2980b9;
+            }
+            .note {
+                font-size: 14px;
+                color: #7f8c8d;
+                margin-top: 20px;
+                font-style: italic;
+            }
+            .footer {
+                text-align: center;
+                padding-top: 20px;
+                border-top: 2px solid #f0f0f0;
+                color: #7f8c8d;
+                font-size: 12px;
+            }
+            .emoji {
+                font-size: 20px;
+                margin-right: 5px;
+            }
+            .buttons-container {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🚀 JobHunter - Cổng thông tin việc làm hàng đầu</h1>
+            </div>
+
+            <div class="content">
+                <p class="welcome-message">
+                    <span class="emoji">🎉</span> Xin chào
+                    <strong th:text="${name}">Nguyễn Văn A</strong>!
+                </p>
+
+                <p>
+                    Chúng tôi vui mừng thông báo bạn đã trở thành
+                    <strong>Nhà Tuyển Dụng</strong> của JobHunter. Từ bây giờ
+                    bạn có thể đăng tuyển và tìm kiếm ứng viên phù hợp trên nền
+                    tảng của chúng tôi.
+                </p>
+
+                <div class="info-box">
+                    <p>
+                        <span class="emoji">👤</span>
+                        <strong>Thông tin tài khoản của bạn:</strong>
+                    </p>
+                    <div class="info-item">
+                        <span class="label">Email:</span>
+                        <span class="value" th:text="${email}"
+                            >example@gmail.com</span
+                        >
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Mật khẩu:</span>
+                        <span class="value" th:text="${password}"
+                            >********</span
+                        >
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Công ty:</span>
+                        <span class="value" th:text="${companyName}"
+                            >Công ty ABC</span
+                        >
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Vai trò:</span>
+                        <span class="value">Nhà Tuyển Dụng</span>
+                    </div>
+                </div>
+
+                <p>
+                    <span class="emoji">🔐</span> Để kích hoạt tài khoản của
+                    bạn, vui lòng sử dụng mã OTP bên dưới:
+                </p>
+
+                <div class="otp-section">
+                    <div class="otp-code" th:text="${otpCode}">123456</div>
+                </div>
+
+                <p>
+                    Mã OTP này có hiệu lực trong vòng <strong>10 phút</strong>.
+                    Vui lòng không chia sẻ mã này với người khác.
+                </p>
+
+                <div class="button-section">
+                    <div class="buttons-container">
+                        <a href="http://localhost:3000/login" class="button"
+                            >Đăng nhập ngay</a
+                        >
+                    </div>
+                </div>
+
+                <p class="note">
+                    <span class="emoji">⚠️</span> Nếu bạn không yêu cầu tạo tài
+                    khoản này, vui lòng bỏ qua email này hoặc liên hệ với chúng
+                    tôi qua địa chỉ
+                    <a href="mailto:support@jobhunter.vn"
+                        >support@jobhunter.vn</a
+                    >.
+                </p>
+            </div>
+
+            <div class="footer">
+                <p>
+                    ©
+                    <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"
+                        >2025</span
+                    >
+                    JobHunter. Tất cả các quyền được bảo lưu.
+                </p>
+                <p>Địa chỉ: 123 Đường Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh</p>
+                <p>
+                    Email:
+                    <a href="mailto:contact@jobhunter.vn"
+                        >contact@jobhunter.vn</a
+                    >
+                    | Điện thoại: (028) 1234 5678
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

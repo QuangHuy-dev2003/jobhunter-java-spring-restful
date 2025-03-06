@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vn.hoidanit.jobhunter.domain.PostLimit;
+import vn.hoidanit.jobhunter.domain.response.ResponseDTO;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.service.PostLimitService;
 import vn.hoidanit.jobhunter.util.annotation.ApiMessage;
@@ -46,12 +47,12 @@ public class PostLimitController {
 
   @DeleteMapping("/post-limits/{id}")
   @ApiMessage("Delete a post limit")
-  public ResponseEntity<String> deletePostLimit(@PathVariable long id) throws IdInvalidException {
+  public ResponseEntity<Void> deletePostLimit(@PathVariable long id) throws IdInvalidException {
     if (postLimitService.getPostLimitById(id).isEmpty()) {
       throw new IdInvalidException("Post limit với id = " + id + " không tồn tại");
     }
     postLimitService.handleDeletePostLimit(id);
-    return ResponseEntity.ok("Xóa thành công");
+    return ResponseEntity.ok(null);
   }
 
   @PutMapping("/post-limits/{id}")

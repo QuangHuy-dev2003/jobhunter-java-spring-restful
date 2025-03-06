@@ -1,17 +1,18 @@
 package vn.hoidanit.jobhunter.service;
 
-import jakarta.transaction.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -32,6 +33,8 @@ public class EmailService {
     private final EmailOtpRepository emailOtpRepository;
 
     private static final long OTP_EXPIRY_MINUTES = 5;
+    @Value("${spring.mail.username}")
+    private String emailSender;
 
     public EmailService(MailSender mailSender,
             JavaMailSender javaMailSender,
@@ -120,11 +123,10 @@ public class EmailService {
 
     public boolean verifyOtp(String email, String otpCode) {
         Optional<EmailOTP> emailOtp = emailOtpRepository
-            .findByEmailAndOtpCodeAndIsUsedFalseAndExpiryTimeAfter(
-                email,
-                otpCode,
-                LocalDateTime.now()
-            );
+                .findByEmailAndOtpCodeAndIsUsedFalseAndExpiryTimeAfter(
+                        email,
+                        otpCode,
+                        LocalDateTime.now());
 
         if (emailOtp.isPresent()) {
             EmailOTP otp = emailOtp.get();
@@ -137,16 +139,92 @@ public class EmailService {
     }
 
     // xóa OTP hết hạn
-    @Scheduled(fixedRate = 300000) // Chạy mỗi 5 phút (5 * 60 * 1000 ms)
-    @Transactional
-    public void cleanupExpiredOtp() {
+    // @Scheduled(fixedRate = 300000) // Chạy mỗi 5 phút (5 * 60 * 1000 ms)
+    // @Transactional
+    // public void cleanupExpiredOtp() {
+    // try {
+    // LocalDateTime now = LocalDateTime.now();
+    // emailOtpRepository.deleteExpiredOtp(now);
+    // System.out.println("Cleaned up expired OTP at: " + now);
+    // } catch (Exception e) {
+    // System.err.println("Error cleaning up expired OTP: " + e.getMessage());
+    // }
+    // }
+
+    /**
+     * Gửi email thông báo đến admin khi có form liên hệ được gửi đến
+     */
+    public void sendContactNotificationEmail(Map<String, Object> contactData) {
         try {
-            LocalDateTime now = LocalDateTime.now();
-            emailOtpRepository.deleteExpiredOtp(now);
-            System.out.println("Cleaned up expired OTP at: " + now);
-        } catch (Exception e) {
-            System.err.println("Error cleaning up expired OTP: " + e.getMessage());
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message,
+                    true,
+                    StandardCharsets.UTF_8.name());
+
+            // Cấu hình email gửi đến admin
+            helper.setTo("quanghuydao17@gmail.com"); // Địa chỉ email của admin
+            helper.setSubject("🔔 JobHunter - Có yêu cầu liên hệ mới từ khách hàng");
+
+            // Xử lý template với dữ liệu form liên hệ
+            Context context = new Context();
+            context.setVariables(contactData);
+
+            String htmlContent = templateEngine.process("contact-notification", context);
+            helper.setText(htmlContent, true);
+
+            javaMailSender.send(message);
+        } catch (MessagingException e) {
+            // Ghi log lỗi
+            System.err.println("Lỗi khi gửi email thông báo liên hệ: " + e.getMessage());
         }
     }
+
+    public boolean sendRecruiterActivationEmail(Map<String, Object> data) {
+        try {
+            String email = (String) data.get("email");
+
+            // Tạo mã OTP mới
+            String otpCode = generateOtp();
+            // Lưu OTP vào database/cache với thời hạn
+            saveOtp(email, otpCode);
+
+            // Thêm OTP vào dữ liệu template
+            data.put("otpCode", otpCode);
+
+            // Sử dụng Thymeleaf để xử lý template
+            Context context = new Context();
+            for (Map.Entry<String, Object> entry : data.entrySet()) {
+                context.setVariable(entry.getKey(), entry.getValue());
+            }
+
+            // Xử lý template và lấy nội dung HTML
+            String htmlContent = templateEngine.process("recruiter-activation-email", context);
+
+            // Gửi email với nội dung HTML
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(emailSender);
+            helper.setTo(email);
+            helper.setSubject("🎉 Chúc mừng! Bạn đã trở thành Nhà Tuyển Dụng của JobHunter");
+            helper.setText(htmlContent, true);
+
+            // Gửi email
+            javaMailSender.send(message);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    private void saveOtp(String email, String otpCode) {
+        EmailOTP emailOtp = new EmailOTP();
+        emailOtp.setEmail(email);
+        emailOtp.setOtpCode(otpCode);
+        emailOtp.setExpiryTime(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES));
+        emailOtp.setUsed(false);
+        emailOtpRepository.save(emailOtp);
+    }
+
 
 }

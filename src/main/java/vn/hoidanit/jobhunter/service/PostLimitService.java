@@ -6,17 +6,29 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vn.hoidanit.jobhunter.domain.Payment;
 import vn.hoidanit.jobhunter.domain.PostLimit;
+import vn.hoidanit.jobhunter.domain.Subscription;
 import vn.hoidanit.jobhunter.domain.response.ResultPaginationDTO;
 import vn.hoidanit.jobhunter.domain.response.postlimit.PostLimitDTO;
+import vn.hoidanit.jobhunter.repository.PaymentRepository;
 import vn.hoidanit.jobhunter.repository.PostLimitRepository;
+import vn.hoidanit.jobhunter.repository.SubscriptionRepository;
 
 @Service
 public class PostLimitService {
   private final PostLimitRepository postLimitRepository;
+  private final PaymentRepository paymentRepository;
+  private final SubscriptionRepository subscriptionRepository;
 
-  public PostLimitService(PostLimitRepository postLimitRepository) {
+  public PostLimitService(
+      PostLimitRepository postLimitRepository,
+      PaymentRepository paymentRepository,
+      SubscriptionRepository subscriptionRepository) {
     this.postLimitRepository = postLimitRepository;
+    this.paymentRepository = paymentRepository;
+    this.subscriptionRepository = subscriptionRepository;
   }
 
   public Optional<PostLimit> getPostLimitById(long id) {
@@ -28,10 +40,21 @@ public class PostLimitService {
   public PostLimit handleCreatePostLimit(PostLimit postLimit) {
     return postLimitRepository.save(postLimit);
   }
-
+  // delete postlimit
+  @Transactional
   public void handleDeletePostLimit(long id) {
+    // Xóa tất cả subscriptions liên quan
+    List<Subscription> subscriptions = subscriptionRepository.findByPostLimitId(id);
+    subscriptionRepository.deleteAll(subscriptions);
+
+    // Xóa tất cả payments liên quan
+    List<Payment> payments = paymentRepository.findByPostLimitId(id);
+    paymentRepository.deleteAll(payments);
+
+    // xóa post limit
     postLimitRepository.deleteById(id);
   }
+
   public ResultPaginationDTO getPostLimitsWithPagination(Pageable pageable) {
     Page<PostLimit> pagePostLimits = postLimitRepository.findAll(pageable);
 

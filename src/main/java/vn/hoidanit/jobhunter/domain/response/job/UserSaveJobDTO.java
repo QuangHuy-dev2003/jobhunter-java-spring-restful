@@ -41,6 +41,7 @@ public class UserSaveJobDTO {
     private double salary;
     private LevelEnum level;
     private Instant startDate;
+    private Instant endDate;
   }
 
   @Getter

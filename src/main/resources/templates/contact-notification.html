@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>Thông báo liên hệ mới</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                background-color: #f9f9f9;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #ffffff;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            }
+            .header {
+                background-color: #2557a7;
+                color: white;
+                padding: 20px 30px;
+                text-align: center;
+            }
+            .header img {
+                height: 40px;
+                margin-bottom: 10px;
+            }
+            .header h1 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 600;
+            }
+            .highlight {
+                color: #ff6b00;
+                font-weight: 600;
+            }
+            .content {
+                padding: 30px;
+            }
+            .info-card {
+                background-color: #f5f9ff;
+                border-left: 4px solid #2557a7;
+                border-radius: 4px;
+                padding: 15px;
+                margin: 20px 0;
+            }
+            .customer-details {
+                margin: 25px 0;
+                border-collapse: collapse;
+                width: 100%;
+            }
+            .customer-details th,
+            .customer-details td {
+                border-bottom: 1px solid #eee;
+                padding: 12px 8px;
+                text-align: left;
+            }
+            .customer-details th {
+                width: 35%;
+                color: #666;
+                font-weight: 500;
+            }
+            .actions {
+                background-color: #f5f5f5;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .button {
+                display: inline-block;
+                background-color: #2557a7;
+                color: white !important;
+                border: 1px solid #f0f0f0;
+                text-decoration: none;
+                padding: 10px 25px;
+                border-radius: 4px;
+                font-weight: 500;
+            }
+            .footer {
+                text-align: center;
+                padding: 15px;
+                color: #666;
+                font-size: 14px;
+                border-top: 1px solid #eee;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <!-- Bạn có thể thêm logo ở đây -->
+
+                <h1>JobHunter - Thông báo liên hệ mới</h1>
+            </div>
+
+            <div class="content">
+                <h2>Xin chào <span class="highlight">ADMIN</span>,</h2>
+
+                <p>
+                    Có khách hàng mới vừa gửi thông tin liên hệ để trở thành nhà
+                    tuyển dụng trên nền tảng JobHunter.
+                </p>
+
+                <div class="info-card">
+                    <p>
+                        Khách hàng
+                        <strong th:text="${fullName}">Nguyễn Văn A</strong> từ
+                        công ty
+                        <strong th:text="${companyName}">ABC Company</strong>
+                        đang tìm kiếm giải pháp tuyển dụng. Đây là cơ hội tốt để
+                        kết nối và mở rộng mạng lưới nhà tuyển dụng của chúng
+                        ta.
+                    </p>
+                </div>
+
+                <h3>Thông tin chi tiết:</h3>
+
+                <table class="customer-details">
+                    <tr>
+                        <th>Họ và tên:</th>
+                        <td th:text="${fullName}">Nguyễn Văn A</td>
+                    </tr>
+                    <tr>
+                        <th>Chức vụ:</th>
+                        <td th:text="${position}">HR Manager</td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>
+                            <a th:href="'mailto:' + ${email}" th:text="${email}"
+                                >email@example.com</a
+                            >
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Số điện thoại:</th>
+                        <td th:text="${phone}">0912345678</td>
+                    </tr>
+                    <tr>
+                        <th>Tên công ty:</th>
+                        <td th:text="${companyName}">ABC Company</td>
+                    </tr>
+                    <tr>
+                        <th>Khu vực:</th>
+                        <td th:text="${companyLocation}">Hồ Chí Minh</td>
+                    </tr>
+                    <tr th:if="${website != null && website != ''}">
+                        <th>Website:</th>
+                        <td>
+                            <a
+                                th:href="${website}"
+                                th:text="${website}"
+                                target="_blank"
+                                >https://example.com</a
+                            >
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Thời gian yêu cầu:</th>
+                        <td th:text="${currentDate}">2025-02-25</td>
+                    </tr>
+                </table>
+
+                <p>
+                    Vui lòng liên hệ với khách hàng trong thời gian sớm nhất để
+                    tư vấn về dịch vụ tuyển dụng của JobHunter.
+                </p>
+            </div>
+
+            <div class="actions">
+                <a th:href="'mailto:' + ${email}" class="button"
+                    >Liên hệ ngay</a
+                >
+            </div>
+
+            <div class="footer">
+                <p>
+                    Email này được gửi tự động từ hệ thống JobHunter. Vui lòng
+                    không trả lời email này.
+                </p>
+                <p>
+                    © 2025 JobHunter - Nền tảng kết nối nhà tuyển dụng và người
+                    tìm việc hàng đầu Việt Nam
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
